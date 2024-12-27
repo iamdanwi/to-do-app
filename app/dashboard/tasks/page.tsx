@@ -1,5 +1,10 @@
+"use client"
+
+import { useState } from "react"
+import { Plus } from 'lucide-react'
+import { Task } from "@/types/task"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { TaskCard } from "@/components/task-card"
 import {
     Select,
     SelectContent,
@@ -7,117 +12,180 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { PlusCircle } from 'lucide-react'
+import { TaskDialog } from "@/components/task_dailog"
+
+// Sample data - In a real app, this would come from your backend
+const sampleTasks: Task[] = [
+    {
+        id: "1",
+        title: "Update landing page design",
+        description: "Implement new hero section and improve mobile responsiveness",
+        status: "in-progress",
+        priority: "high",
+        dueDate: new Date("2024-01-05"),
+        category: { id: "1", name: "Work", color: "#0ea5e9" },
+        createdBy: {
+            id: "1",
+            name: "John Doe",
+            email: "john@example.com",
+        },
+        assignedTo: [
+            { id: "1", name: "John Doe", email: "john@example.com" },
+            { id: "2", name: "Jane Smith", email: "jane@example.com" },
+        ],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        comments: [
+            {
+                id: "1",
+                content: "Making good progress on this",
+                createdAt: new Date(),
+                user: { id: "1", name: "John Doe", email: "john@example.com" },
+            },
+        ],
+    },
+    {
+        id: "2",
+        title: "Write documentation",
+        description: "Create comprehensive documentation for the new API endpoints",
+        status: "todo",
+        priority: "medium",
+        dueDate: new Date("2024-01-10"),
+        category: { id: "1", name: "Work", color: "#0ea5e9" },
+        createdBy: {
+            id: "1",
+            name: "John Doe",
+            email: "john@example.com",
+        },
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        comments: [],
+    },
+    {
+        id: "3",
+        title: "Review pull requests",
+        description: "Review and merge pending pull requests",
+        status: "completed",
+        priority: "low",
+        category: { id: "1", name: "Work", color: "#0ea5e9" },
+        createdBy: {
+            id: "1",
+            name: "John Doe",
+            email: "john@example.com",
+        },
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        comments: [],
+        isRecurring: true,
+        recurringSchedule: "weekly",
+    },
+]
+
+const sampleCategories = [
+    { id: "1", name: "Work", color: "#0ea5e9" },
+    { id: "2", name: "Personal", color: "#f7971e" },
+]
+
+type FilterStatus = Task['status'] | 'all'
 
 export default function TasksPage() {
+    const [tasks, setTasks] = useState<Task[]>(sampleTasks)
+    const [isNewTaskOpen, setIsNewTaskOpen] = useState(false)
+    const [filter, setFilter] = useState<FilterStatus>('all')
+
+    const handleStatusChange = (taskId: string, newStatus: Task["status"]) => {
+        setTasks(tasks.map(task =>
+            task.id === taskId ? { ...task, status: newStatus } : task
+        ))
+    }
+
+    const handleDeleteTask = (taskId: string) => {
+        setTasks(tasks.filter(task => task.id !== taskId))
+    }
+
+    const handleNewTask = (formData: FormData) => {
+        const newTask: Task = {
+            id: `task-${tasks.length + 1}`,
+            title: formData.get('title') as string,
+            description: formData.get('description') as string,
+            status: 'todo',
+            priority: formData.get('priority') as Task['priority'],
+            dueDate: formData.get('dueDate') ? new Date(formData.get('dueDate') as string) : undefined,
+            category: sampleCategories.find(c => c.id === formData.get('category')),
+            assignedTo: [], // In a real app, this would be populated from form data
+            createdBy: {
+                id: "1",
+                name: "John Doe",
+                email: "john@example.com",
+            },
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            comments: [],
+            isRecurring: formData.get('recurring') === 'true',
+            recurringSchedule: formData.get('recurringSchedule') as string,
+        }
+        setTasks([...tasks, newTask])
+        setIsNewTaskOpen(false)
+    }
+
+    const filteredTasks = filter === 'all'
+        ? tasks
+        : tasks.filter(task => task.status === filter)
+
     return (
-        <div className="space-y-8">
+        <div className="w-full space-y-8">
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">Tasks</h1>
-                    <p className="text-muted-foreground">Manage and organize your tasks</p>
+                    <p className="text-muted-foreground">
+                        Manage and track your tasks
+                    </p>
                 </div>
-                <Button>
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Add Task
+                <Button onClick={() => setIsNewTaskOpen(true)}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    New Task
                 </Button>
             </div>
 
-            <Card>
-                <CardHeader>
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <CardTitle>All Tasks</CardTitle>
-                            <CardDescription>A list of all your tasks</CardDescription>
-                        </div>
-                        <Select defaultValue="all">
-                            <SelectTrigger className="w-[180px]">
-                                <SelectValue placeholder="Filter by status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">All Tasks</SelectItem>
-                                <SelectItem value="completed">Completed</SelectItem>
-                                <SelectItem value="in-progress">In Progress</SelectItem>
-                                <SelectItem value="pending">Pending</SelectItem>
-                            </SelectContent>
-                        </Select>
+            <div className="flex items-center gap-4">
+                <Select
+                    value={filter}
+                    onValueChange={(value: FilterStatus) => setFilter(value)}
+                >
+                    <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Filter by status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All Tasks</SelectItem>
+                        <SelectItem value="todo">Todo</SelectItem>
+                        <SelectItem value="in-progress">In Progress</SelectItem>
+                        <SelectItem value="completed">Completed</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {filteredTasks.map((task) => (
+                    <TaskCard
+                        key={task.id}
+                        task={task}
+                        onStatusChange={handleStatusChange}
+                        onDelete={handleDeleteTask}
+                    />
+                ))}
+                {filteredTasks.length === 0 && (
+                    <div className="col-span-full text-center py-12 text-muted-foreground">
+                        No tasks found. Create a new task to get started.
                     </div>
-                </CardHeader>
-                <CardContent>
-                    <div className="space-y-4">
-                        {[
-                            {
-                                title: "Update landing page design",
-                                description: "Implement new hero section and improve mobile responsiveness",
-                                status: "In Progress",
-                                priority: "High",
-                                dueDate: "2024-01-05",
-                            },
-                            {
-                                title: "Create user documentation",
-                                description: "Write comprehensive guide for new features",
-                                status: "Completed",
-                                priority: "Medium",
-                                dueDate: "2024-01-03",
-                            },
-                            {
-                                title: "Review pull requests",
-                                description: "Review and merge pending PRs for the frontend",
-                                status: "Pending",
-                                priority: "High",
-                                dueDate: "2024-01-04",
-                            },
-                            {
-                                title: "Update dependencies",
-                                description: "Update all npm packages to latest versions",
-                                status: "Completed",
-                                priority: "Low",
-                                dueDate: "2024-01-02",
-                            },
-                            {
-                                title: "Fix navigation bug",
-                                description: "Debug and fix the mobile navigation issue",
-                                status: "In Progress",
-                                priority: "High",
-                                dueDate: "2024-01-06",
-                            },
-                        ].map((task) => (
-                            <div
-                                key={task.title}
-                                className="flex items-center justify-between rounded-lg border p-4"
-                            >
-                                <div className="space-y-1">
-                                    <p className="font-medium leading-none">{task.title}</p>
-                                    <p className="text-sm text-muted-foreground">
-                                        {task.description}
-                                    </p>
-                                    <div className="flex gap-2 text-sm">
-                                        <span className="text-muted-foreground">Due {task.dueDate}</span>
-                                        <span>•</span>
-                                        <span className={
-                                            task.priority === "High"
-                                                ? "text-red-600"
-                                                : task.priority === "Medium"
-                                                    ? "text-yellow-600"
-                                                    : "text-green-600"
-                                        }>
-                                            {task.priority} Priority
-                                        </span>
-                                    </div>
-                                </div>
-                                <div className={`text-sm ${task.status === "Completed"
-                                    ? "text-green-600"
-                                    : task.status === "In Progress"
-                                        ? "text-blue-600"
-                                        : "text-yellow-600"
-                                    }`}>
-                                    {task.status}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </CardContent>
-            </Card>
+                )}
+            </div>
+
+            <TaskDialog
+                mode="create"
+                open={isNewTaskOpen}
+                onOpenChange={setIsNewTaskOpen}
+                onSubmit={handleNewTask}
+            />
         </div>
     )
 }

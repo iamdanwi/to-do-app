@@ -1,6 +1,6 @@
 "use client"
 
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { Menu } from 'lucide-react'
 import Link from "next/link"
@@ -20,7 +20,10 @@ export function MobileNav({ isOpen, setIsOpen }: MobileNavProps) {
                 </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-[300px] sm:w-[400px]">
-                <nav className="flex flex-col gap-4">
+                <SheetHeader>
+                    <SheetTitle>Navigation Menu</SheetTitle>
+                </SheetHeader>
+                <nav className="flex flex-col gap-4 mt-4">
                     <Link
                         href="#features"
                         onClick={() => setIsOpen(false)}

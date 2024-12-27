@@ -1,62 +1,165 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Calendar } from "@/components/ui/calendar"
+"use client"
+
+import { useState } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
+
+// Helper function to generate calendar days
+function generateCalendarDays(currentMonth: Date) {
+    const firstDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1)
+    const lastDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0)
+    const days = []
+    const startDay = firstDay.getDay()
+
+    // Add previous month's days
+    for (let i = 0; i < startDay; i++) {
+        const prevMonthLastDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 0)
+        days.push({
+            date: prevMonthLastDay.getDate() - (startDay - i - 1),
+            isCurrentMonth: false
+        })
+    }
+
+    // Add current month's days
+    for (let i = 1; i <= lastDay.getDate(); i++) {
+        days.push({
+            date: i,
+            isCurrentMonth: true,
+            isToday: new Date().getDate() === i &&
+                new Date().getMonth() === currentMonth.getMonth() &&
+                new Date().getFullYear() === currentMonth.getFullYear()
+        })
+    }
+
+    // Add next month's days
+    const remainingDays = 42 - days.length // 6 rows * 7 days = 42
+    for (let i = 1; i <= remainingDays; i++) {
+        days.push({
+            date: i,
+            isCurrentMonth: false
+        })
+    }
+
+    return days
+}
 
 export default function CalendarPage() {
+    const [currentMonth, setCurrentMonth] = useState(new Date())
+    const weekDays = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
+    const days = generateCalendarDays(currentMonth)
+
+    // Calendar navigation
+    const nextMonth = () => {
+        setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))
+    }
+
+    const prevMonth = () => {
+        setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))
+    }
+
+    // Get month details
+    const month = currentMonth.toLocaleString('default', { month: 'long' })
+    const year = currentMonth.getFullYear()
+
     return (
-        <div className="max-w-4xl container mx-auto space-y-8">
-            <div className="space-y-8">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Calendar</h1>
-                    <p className="text-muted-foreground">View and manage your tasks in calendar view</p>
-                </div>
+        <div className="h-full w-full">
+            <div>
+                <h1 className="text-3xl font-bold tracking-tight">Calendar</h1>
+                <p className="text-muted-foreground">
+                    View and manage your tasks in calendar view
+                </p>
+            </div>
 
-                <div className="grid gap-4 md:grid-cols-[1fr,300px]">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Calendar</CardTitle>
-                            <CardDescription>Your tasks organized by date</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <Calendar
-                                mode="single"
-                                className="rounded-md border"
-                            />
-                        </CardContent>
-                    </Card>
+            <div className="mt-8 grid gap-8 lg:grid-cols-[1fr,280px]">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Calendar</CardTitle>
+                        <p className="text-sm text-muted-foreground">
+                            Your tasks organized by date
+                        </p>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="space-y-4">
+                            {/* Month Navigation */}
+                            <div className="flex items-center justify-between">
+                                <Button
+                                    variant="ghost"
+                                    className="h-8 w-8 p-0"
+                                    onClick={prevMonth}
+                                >
+                                    <ChevronLeft className="h-4 w-4" />
+                                    <span className="sr-only">Previous month</span>
+                                </Button>
+                                <div className="font-medium">
+                                    {month} {year}
+                                </div>
+                                <Button
+                                    variant="ghost"
+                                    className="h-8 w-8 p-0"
+                                    onClick={nextMonth}
+                                >
+                                    <ChevronRight className="h-4 w-4" />
+                                    <span className="sr-only">Next month</span>
+                                </Button>
+                            </div>
 
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Upcoming Tasks</CardTitle>
-                            <CardDescription>Tasks due soon</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-4">
-                                {[
-                                    {
-                                        title: "Team Meeting",
-                                        date: "Today, 2:00 PM",
-                                    },
-                                    {
-                                        title: "Project Review",
-                                        date: "Tomorrow, 10:00 AM",
-                                    },
-                                    {
-                                        title: "Client Presentation",
-                                        date: "Jan 5, 3:30 PM",
-                                    },
-                                ].map((task) => (
+                            {/* Calendar Grid */}
+                            <div className="grid grid-cols-7 gap-px text-sm">
+                                {/* Week day headers */}
+                                {weekDays.map((day) => (
                                     <div
-                                        key={task.title}
-                                        className="flex flex-col space-y-1 rounded-lg border p-4"
+                                        key={day}
+                                        className="flex h-8 items-center justify-center font-medium"
                                     >
-                                        <p className="font-medium leading-none">{task.title}</p>
-                                        <p className="text-sm text-muted-foreground">{task.date}</p>
+                                        {day}
                                     </div>
                                 ))}
+
+                                {/* Calendar days */}
+                                {days.map((day, index) => (
+                                    <Button
+                                        key={index}
+                                        variant="ghost"
+                                        className={cn(
+                                            "h-12 hover:bg-muted",
+                                            !day.isCurrentMonth && "text-muted-foreground",
+                                            day.isToday && "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground"
+                                        )}
+                                    >
+                                        {day.date}
+                                    </Button>
+                                ))}
                             </div>
-                        </CardContent>
-                    </Card>
-                </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Upcoming Tasks</CardTitle>
+                        <p className="text-sm text-muted-foreground">
+                            Tasks due soon
+                        </p>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <div className="font-medium">Team Meeting</div>
+                                <div className="text-sm text-muted-foreground">Today, 2:00 PM</div>
+                            </div>
+                            <div className="space-y-2">
+                                <div className="font-medium">Project Review</div>
+                                <div className="text-sm text-muted-foreground">Tomorrow, 10:00 AM</div>
+                            </div>
+                            <div className="space-y-2">
+                                <div className="font-medium">Client Presentation</div>
+                                <div className="text-sm text-muted-foreground">Jan 5, 3:30 PM</div>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
         </div>
     )

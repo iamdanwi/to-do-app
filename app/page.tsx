@@ -18,11 +18,12 @@ export default function Home() {
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-14 items-center px-4">
-          <div className="flex gap-2 items-center mr-4 font-semibold">
-            <ListTodo className="h-6 w-6" />
-            <span>TaskMaster</span>
-          </div>
-
+          <Link href="/">
+            <div className="flex gap-2 items-center mr-4 font-semibold">
+              <ListTodo className="h-6 w-6" />
+              <span>TaskMaster</span>
+            </div>
+          </Link>
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center justify-center space-x-6 text-sm font-medium flex-1">
             <Link href="#features" className="transition-colors hover:text-foreground/80">
@@ -81,7 +82,7 @@ export default function Home() {
           </div>
           <div className="mt-8 w-full max-w-[980px] rounded-lg border bg-gradient-to-b from-background to-muted/50 p-4">
             <Image
-              src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+              src="/dashboardMockup.png"
               width={1000}
               height={500}
               alt="TaskMaster Dashboard Preview"
@@ -372,7 +373,7 @@ export default function Home() {
                     </p>
                     <div className="flex items-center gap-4 mt-4">
                       <Image
-                        src={`/placeholder.svg?height=40&width=40`}
+                        src={`/person1.jpg?height=40&width=40`}
                         width={40}
                         height={40}
                         alt="User avatar"
@@ -391,7 +392,7 @@ export default function Home() {
         </section>
 
         {/* CTA Section */}
-        <section className="border-t">
+        <section className="">
           <div className="container px-4 py-12 md:py-24 lg:py-32">
             <div className="mx-auto flex max-w-[58rem] flex-col items-center justify-center gap-4 text-center">
               <h2 className="font-bold text-3xl leading-[1.1] sm:text-3xl md:text-5xl">
@@ -406,6 +407,52 @@ export default function Home() {
                 </Link>
                 <Link href="#pricing">
                   <Button variant="outline" size="lg">View Pricing</Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* About Section */}
+        <section id="about" className="border-t bg-muted/50">
+          <div className="container px-4 py-12 md:py-24 lg:py-32">
+            <div className="mx-auto flex max-w-[58rem] flex-col items-center justify-center gap-4 text-center">
+              <h2 className="font-bold text-3xl leading-[1.1] sm:text-3xl md:text-5xl">
+                About TaskMaster
+              </h2>
+              <p className="max-w-[85%] leading-normal text-muted-foreground sm:text-lg sm:leading-7">
+                Empowering individuals and teams to achieve more through efficient task management
+              </p>
+            </div>
+            <div className="mx-auto grid max-w-5xl grid-cols-1 gap-8 md:grid-cols-2 lg:gap-12 mt-8">
+              <div className="flex flex-col gap-4">
+                <h3 className="text-xl font-bold">Our Mission</h3>
+                <p className="text-muted-foreground">
+                  At TaskMaster, we&apos;re on a mission to simplify task management and boost productivity for individuals and teams worldwide. We believe that with the right tools, anyone can achieve their goals and make the most of their time.
+                </p>
+              </div>
+              <div className="flex flex-col gap-4">
+                <h3 className="text-xl font-bold">Our Story</h3>
+                <p className="text-muted-foreground">
+                  Founded in 2023, TaskMaster was born out of a passion for productivity and a desire to create a tool that adapts to the way people work. Our team of dedicated professionals has worked tirelessly to develop a platform that&apos;s both powerful and user-friendly.
+                </p>
+              </div>
+              <div className="flex flex-col gap-4">
+                <h3 className="text-xl font-bold">Our Values</h3>
+                <ul className="list-disc list-inside text-muted-foreground">
+                  <li>Simplicity in design</li>
+                  <li>Continuous innovation</li>
+                  <li>User-centric approach</li>
+                  <li>Transparency and reliability</li>
+                </ul>
+              </div>
+              <div className="flex flex-col gap-4">
+                <h3 className="text-xl font-bold">Join Our Journey</h3>
+                <p className="text-muted-foreground">
+                  We&apos;re constantly evolving and improving TaskMaster based on user feedback and technological advancements. Join us on our mission to revolutionize task management and unlock your full potential.
+                </p>
+                <Link href="/signup">
+                  <Button variant="outline">Get Started Today</Button>
                 </Link>
               </div>
             </div>
