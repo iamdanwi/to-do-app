@@ -8,7 +8,6 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { CheckCircle, ListTodo, Clock, Share2, Zap, Shield, Smartphone, Star, Check } from 'lucide-react'
 import { MobileNav } from "@/components/mobile-nav"
-// import { MobileNav } from "@/components/mobile-nav"
 
 export default function Home() {
   const [isOpen, setIsOpen] = useState(false)
