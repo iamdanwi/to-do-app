@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import axios, { AxiosError } from "axios"
+import axios from "axios"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { ToastContainer, toast } from "react-toastify"
@@ -50,9 +50,10 @@ export default function LoginPage() {
                     theme: "light",
                 });
             }
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (error: unknown) {
-            const errorMessage = (error as AxiosError).response?.data?.toString() || "Something went wrong. Please try again.";
-            toast.error(errorMessage, {
+            // const errorMessage = (error as AxiosError).response?.data?.toString() || "Something went wrong. Please try again.";
+            toast.error("Invalid crerdentials", {
                 position: "top-right",
                 autoClose: 3000,
                 hideProgressBar: false,
@@ -61,6 +62,7 @@ export default function LoginPage() {
                 draggable: true,
                 theme: "light",
             });
+            // console.log(errorMessage);
         } finally {
             setLoading(false);
             setButtonDisabled(false);
