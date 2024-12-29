@@ -1,47 +1,83 @@
-"use client"
+"use client";
 
-import { ReactNode, useState } from "react"
-import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
-import { LayoutDashboard, ListTodo, Calendar, Settings, Bell, Search, PlusCircle, Menu, LogOut } from 'lucide-react'
-import { NewTaskDialog } from "@/components/new-task-dailog"
+import { ReactNode, useState, useEffect } from "react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { LayoutDashboard, ListTodo, Calendar, Settings, Bell, Search, PlusCircle, Menu, LogOut } from "lucide-react";
+import { NewTaskDialog } from "@/components/new-task-dailog";
+import axios from "axios";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
-    const [isNewTaskOpen, setIsNewTaskOpen] = useState(false)
-    const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
-    const pathname = usePathname()
     const router = useRouter();
+    const pathname = usePathname();
 
+    const [isNewTaskOpen, setIsNewTaskOpen] = useState(false);
+    const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
+    useEffect(() => {
+        const checkAuth = async () => {
+            try {
+                const response = await axios.get("/api/auth/check");
+                if (response.data.isAuthenticated) {
+                    setIsAuthenticated(true);
+                } else {
+                    router.push("/login");
+                }
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            } catch (error) {
+                router.push("/login");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        checkAuth();
+    }, [router]);
 
     const navigation = [
-        { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
-        { name: 'Tasks', href: '/dashboard/tasks', icon: ListTodo },
-        { name: 'Calendar', href: '/dashboard/calendar', icon: Calendar },
-        { name: 'Notifications', href: '/dashboard/notifications', icon: Bell },
-        { name: 'Settings', href: '/dashboard/settings', icon: Settings },
-    ]
+        { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
+        { name: "Tasks", href: "/dashboard/tasks", icon: ListTodo },
+        { name: "Calendar", href: "/dashboard/calendar", icon: Calendar },
+        { name: "Notifications", href: "/dashboard/notifications", icon: Bell },
+        { name: "Settings", href: "/dashboard/settings", icon: Settings },
+    ];
 
     const handleLogout = async () => {
         try {
             const response = await fetch("/api/users/logout", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-            })
+            });
 
             if (response.ok) {
                 router.push("/");
             } else {
-                const data = await response.json()
-                console.error(data.error)
+                const data = await response.json();
+                console.error(data.error);
             }
         } catch (error: unknown) {
-            console.error("An error occurred during logout.", (error as Error).message)
+            console.error("An error occurred during logout.", (error as Error).message);
         }
+    };
+
+    // Render a loader while authentication is being checked
+    if (isLoading) {
+        return (
+            <div className="flex h-screen items-center justify-center">
+                <div className="text-gray-600">Loading...</div>
+            </div>
+        );
+    }
+
+    // Prevent rendering the dashboard if the user is not authenticated
+    if (!isAuthenticated) {
+        return null;
     }
 
     return (
@@ -90,9 +126,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                                 </Button>
                             </Link>
                         ))}
-
-
                     </nav>
+
                     <Button
                         variant={"outline"}
                         className="w-full justify-start gap-2 border-red-600 text-red-600 hover:bg-red-600 hover:text-white"
@@ -129,8 +164,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                         <Button
                             className="w-full justify-start gap-2"
                             onClick={() => {
-                                setIsNewTaskOpen(true)
-                                setIsMobileNavOpen(false)
+                                setIsNewTaskOpen(true);
+                                setIsMobileNavOpen(false);
                             }}
                         >
                             <PlusCircle className="h-4 w-4" />
@@ -155,8 +190,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                                     </Button>
                                 </Link>
                             ))}
-
                         </nav>
+
                         <Button
                             variant={"outline"}
                             className="w-full justify-start gap-2 border-red-600 text-red-600 hover:bg-red-600 hover:text-white"
@@ -194,6 +229,5 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                 onOpenChange={setIsNewTaskOpen}
             />
         </div>
-    )
+    );
 }
-

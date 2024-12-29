@@ -137,7 +137,7 @@ function VerifyContent() {
 
 export default function VerfiyPage() {
     return (
-        <Suspense fallback={`<p>Loading....</p>`}>
+        <Suspense fallback={`<Loader2 className="mr-2 h-4 w-4 animate-spin" />`}>
             <VerifyContent />
         </Suspense>
     );
