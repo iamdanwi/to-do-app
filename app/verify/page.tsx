@@ -136,7 +136,9 @@ function VerifyContent() {
 
 
 export default function VerfiyPage() {
-    <Suspense fallback={`<p>Loading....</p>`}>
-        <VerifyContent />
-    </Suspense>
+    return (
+        <Suspense fallback={`<p>Loading....</p>`}>
+            <VerifyContent />
+        </Suspense>
+    );
 }
