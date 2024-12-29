@@ -25,8 +25,10 @@ export const sendEmail = async ({ email, emailType, userId }: SendEmailParams) =
         if (emailType === 'verify') {
             // Update user with verification token
             await User.findByIdAndUpdate(userId, {
-                verifyToken: token,
-                verifyTokenExpire: Date.now() + 3600000, // 1 hour expiry
+                $set: {
+                    verifyToken: token,
+                    verifyTokenExpire: Date.now() + 3600000,
+                } // 1 hour expiry
             });
         } else if (emailType === 'reset') {
             // Update user with reset password token
@@ -59,7 +61,7 @@ export const sendEmail = async ({ email, emailType, userId }: SendEmailParams) =
             htmlContent = `
                 <h1>Email Verification</h1>
                 <p>Click the link below to verify your email:</p>
-                <a href="${process.env.CLIENT_URL}/auth/verify/${token}">Verify Email</a>
+                <a href="${process.env.CLIENT_URL}/verify?token=${token}">Verify Email</a>
                 <p>This link will expire in 1 hour.</p>
             `;
         } else if (emailType === 'reset') {
