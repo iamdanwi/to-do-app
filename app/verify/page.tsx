@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { CheckCircle2, XCircle, Loader2 } from 'lucide-react'
@@ -12,7 +12,7 @@ import "react-toastify/dist/ReactToastify.css"
 
 
 
-export default function VerifyPage() {
+function VerifyContent() {
     const router = useRouter();
 
     const [token, setToken] = useState("");
@@ -132,4 +132,11 @@ export default function VerifyPage() {
             </div>
         </div>
     );
+}
+
+
+export default function VerfiyPage() {
+    <Suspense fallback={`<p>Loading....</p>`}>
+        <VerifyContent />
+    </Suspense>
 }

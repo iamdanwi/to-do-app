@@ -40,7 +40,7 @@ export default function SignUpPage() {
                     draggable: true,
                     theme: "light",
                 });
-                setTimeout(() => router.push("/login"), 3000);
+                setTimeout(() => router.push(`/verifyEmailInstruction?email=${user.email}`), 3000);
             } else {
                 toast.error(response.data.error || "An error occurred.", {
                     position: "top-right",
