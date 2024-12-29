@@ -2,18 +2,21 @@
 
 import { ReactNode, useState } from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
-import { LayoutDashboard, ListTodo, Calendar, Settings, Bell, Search, PlusCircle, Menu } from 'lucide-react'
+import { LayoutDashboard, ListTodo, Calendar, Settings, Bell, Search, PlusCircle, Menu, LogOut } from 'lucide-react'
 import { NewTaskDialog } from "@/components/new-task-dailog"
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
     const [isNewTaskOpen, setIsNewTaskOpen] = useState(false)
     const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
     const pathname = usePathname()
+    const router = useRouter();
+
+
 
     const navigation = [
         { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
@@ -22,6 +25,24 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         { name: 'Notifications', href: '/dashboard/notifications', icon: Bell },
         { name: 'Settings', href: '/dashboard/settings', icon: Settings },
     ]
+
+    const handleLogout = async () => {
+        try {
+            const response = await fetch("/api/users/logout", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+            })
+
+            if (response.ok) {
+                router.push("/");
+            } else {
+                const data = await response.json()
+                console.error(data.error)
+            }
+        } catch (error: unknown) {
+            console.error("An error occurred during logout.", (error as Error).message)
+        }
+    }
 
     return (
         <div className="flex h-screen overflow-hidden bg-gray-50/50">
@@ -69,7 +90,17 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                                 </Button>
                             </Link>
                         ))}
+
+
                     </nav>
+                    <Button
+                        variant={"outline"}
+                        className="w-full justify-start gap-2 border-red-600 text-red-600 hover:bg-red-600 hover:text-white"
+                        onClick={handleLogout}
+                    >
+                        <LogOut className="h-4 w-4" />
+                        Log out
+                    </Button>
                 </div>
             </div>
 
@@ -124,7 +155,16 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                                     </Button>
                                 </Link>
                             ))}
+
                         </nav>
+                        <Button
+                            variant={"outline"}
+                            className="w-full justify-start gap-2 border-red-600 text-red-600 hover:bg-red-600 hover:text-white"
+                            onClick={handleLogout}
+                        >
+                            <LogOut className="h-4 w-4" />
+                            Log out
+                        </Button>
                     </div>
                 </SheetContent>
             </Sheet>
