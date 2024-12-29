@@ -5,7 +5,7 @@ import User from "@/models/user.model";
 
 connectDB();
 
-export default async function handler(req: NextRequest) {
+export default async function GET(req: NextRequest) {
     const userId = await getDataFromToken(req);
     const user = User.findOne({ _id: userId }).select("-password");
 
