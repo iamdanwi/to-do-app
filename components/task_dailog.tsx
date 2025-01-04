@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { CalendarIcon, Plus, X } from 'lucide-react'
 import { format } from "date-fns"
-import { Task, TaskCategory, User } from "@/types/task"
+import { Task, TaskCategory, User } from "@/types/task.types"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import {

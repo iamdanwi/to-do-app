@@ -1,8 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { CalendarIcon } from 'lucide-react'
+import { CalendarIcon, Loader2 } from "lucide-react"
 import { format } from "date-fns"
+import axios from "axios"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import {
@@ -37,11 +38,46 @@ interface NewTaskDialogProps {
 
 export function NewTaskDialog({ open, onOpenChange }: NewTaskDialogProps) {
   const [dueDate, setDueDate] = useState<Date>()
+  const [taskPriority, setTaskPriority] = useState("Medium")
+  const [task, setTask] = useState({
+    taskTitle: "",
+    taskDescription: "",
+    taskDueDate: dueDate,
+    taskPriority: "Medium",
+  })
 
-  const onSubmit = (event: React.FormEvent) => {
+  const [loading, setLoading] = useState(false)
+
+  // Handle form field changes
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setTask((prevTask) => ({
+      ...prevTask,
+      [e.target.name]: e.target.value,
+    }))
+  }
+
+  // Handle form submission
+  const onSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
-    // Handle form submission
-    onOpenChange(false)
+    setLoading(true)
+
+    try {
+      const response = await axios.post("/api/tasks/create-task", {
+        ...task,
+        taskDueDate: dueDate,
+        taskPriority,
+      })
+
+      if (response.status === 201) {
+        alert("Task created successfully!")
+        onOpenChange(false)
+      }
+    } catch (error) {
+      console.error("Error creating task:", error)
+      alert("Failed to create task.")
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -56,19 +92,25 @@ export function NewTaskDialog({ open, onOpenChange }: NewTaskDialogProps) {
         <form onSubmit={onSubmit} className="space-y-4">
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="title">Title</Label>
+              <Label htmlFor="taskTitle">Title</Label>
               <Input
-                id="title"
+                id="taskTitle"
+                name="taskTitle"
                 placeholder="Enter task title"
                 required
+                value={task.taskTitle}
+                onChange={handleChange}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="taskDescription">Description</Label>
               <Textarea
-                id="description"
+                id="taskDescription"
+                name="taskDescription"
                 placeholder="Enter task description"
                 className="min-h-[100px]"
+                value={task.taskDescription}
+                onChange={handleChange}
               />
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
@@ -99,25 +141,33 @@ export function NewTaskDialog({ open, onOpenChange }: NewTaskDialogProps) {
               </div>
               <div className="space-y-2">
                 <Label>Priority</Label>
-                <Select defaultValue="medium">
+                <Select
+                  defaultValue="Medium"
+                  onValueChange={(value) => setTaskPriority(value)}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select priority" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="low">Low</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="high">High</SelectItem>
+                    <SelectItem value="Low">Low</SelectItem>
+                    <SelectItem value="Medium">Medium</SelectItem>
+                    <SelectItem value="High">High</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
           </div>
           <DialogFooter>
-            <Button type="submit">Create Task</Button>
+            <Button type="submit" disabled={loading}>
+              {loading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                "Create Task"
+              )}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
   )
 }
-

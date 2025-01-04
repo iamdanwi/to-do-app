@@ -33,27 +33,29 @@ export async function POST(request: NextRequest) {
             throw new Error("JWT_SECRET is not defined in environment variables");
         }
 
-        // Generate a JWT token
-        const token = jwt.sign({ userId: existingUser._id }, process.env.JWT_SECRET!, { expiresIn: "1d" });
+        // ✅ Generate a JWT token with userId in the payload
+        const token = jwt.sign(
+            { userId: existingUser._id },
+            process.env.JWT_SECRET,
+            { expiresIn: "1d" }
+        );
 
         // Return success response with token
         const response = NextResponse.json({
             message: "User logged in successfully.",
             success: true,
-            token
+            token,
         }, { status: 200 });
 
+        // Set token as a cookie
         response.cookies.set("token", token, {
             httpOnly: true,
-        })
+        });
 
         return response;
 
     } catch (error: unknown) {
         console.error(error);
-        if (error instanceof Error) {
-            return NextResponse.json({ error: error.message || "Internal server error." }, { status: 500 });
-        }
-        return NextResponse.json({ error: "Internal server error." }, { status: 500 });
+        return NextResponse.json({ error: (error as Error).message || "Internal server error." }, { status: 500 });
     }
 }
