@@ -1,9 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { CalendarIcon, Plus, X } from 'lucide-react'
+import { CalendarIcon } from 'lucide-react'
 import { format } from "date-fns"
-import { Task, TaskCategory, User } from "@/types/task.types"
+import { TaskType, User } from "@/types/task.types"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import {
@@ -30,16 +30,7 @@ import {
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
-import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-
-// Sample data - In a real app, these would come from your backend
-const sampleCategories: TaskCategory[] = [
-    { id: "1", name: "Work", color: "#0ea5e9" },
-    { id: "2", name: "Personal", color: "#8b5cf6" },
-    { id: "3", name: "Shopping", color: "#f59e0b" },
-    { id: "4", name: "Health", color: "#10b981" },
-]
 
 const sampleUsers: User[] = [
     { id: "1", name: "John Doe", email: "john@example.com" },
@@ -51,7 +42,7 @@ interface TaskDialogProps {
     mode: "create" | "edit"
     open: boolean
     onOpenChange: (open: boolean) => void
-    defaultValues?: Task
+    defaultValues?: TaskType
     onSubmit?: (formData: FormData) => void
 }
 
@@ -62,23 +53,20 @@ export function TaskDialog({
     defaultValues,
     onSubmit,
 }: TaskDialogProps) {
-    const [selectedUsers, setSelectedUsers] = useState<User[]>(
-        defaultValues?.assignedTo || []
+    const [dueDate, setDueDate] = useState<Date | undefined>(defaultValues?.due_date ? new Date(defaultValues.due_date) : undefined)
+    const [taskPriority, setTaskPriority] = useState<"Low" | "Medium" | "High">(defaultValues?.task_priority || "Medium")
+    const [taskStatus, setTaskStatus] = useState(defaultValues?.task_status || "todo")
+    const [assignedUser, setAssignedUser] = useState<User | null>(
+        defaultValues?.user ? sampleUsers.find(user => user.id === defaultValues.user) || null : null
     )
-    const [dueDate, setDueDate] = useState<Date | undefined>(
-        defaultValues?.dueDate
-    )
-    const [isRecurring, setIsRecurring] = useState(defaultValues?.isRecurring || false)
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault()
         const formData = new FormData(event.currentTarget)
-        if (isRecurring) {
-            formData.set('recurring', 'true')
-        }
-        if (dueDate) {
-            formData.set('dueDate', dueDate.toISOString())
-        }
+        if (dueDate) formData.set('due_date', dueDate.toISOString())
+        formData.set('task_priority', taskPriority)
+        formData.set('task_status', taskStatus)
+        formData.set('user', assignedUser?.id || "")
         onSubmit?.(formData)
     }
 
@@ -98,23 +86,23 @@ export function TaskDialog({
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="title">Title</Label>
+                            <Label htmlFor="task_title">Title</Label>
                             <Input
-                                id="title"
-                                name="title"
+                                id="task_title"
+                                name="task_title"
                                 placeholder="Enter task title"
-                                defaultValue={defaultValues?.title}
+                                defaultValue={defaultValues?.task_title}
                                 required
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="description">Description</Label>
+                            <Label htmlFor="task_description">Description</Label>
                             <Textarea
-                                id="description"
-                                name="description"
+                                id="task_description"
+                                name="task_description"
                                 placeholder="Enter task description"
-                                defaultValue={defaultValues?.description}
+                                defaultValue={defaultValues?.task_description}
                                 className="min-h-[100px]"
                             />
                         </div>
@@ -149,153 +137,78 @@ export function TaskDialog({
 
                             <div className="space-y-2">
                                 <Label>Priority</Label>
-                                <Select defaultValue={defaultValues?.priority || "medium"} name="priority">
+                                <Select
+                                    value={taskPriority}
+                                    onValueChange={(value) => setTaskPriority(value as "Low" | "Medium" | "High")}
+                                    name="task_priority"
+                                >
                                     <SelectTrigger>
                                         <SelectValue placeholder="Select priority" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="low">Low</SelectItem>
-                                        <SelectItem value="medium">Medium</SelectItem>
-                                        <SelectItem value="high">High</SelectItem>
+                                        <SelectItem value="Low">Low</SelectItem>
+                                        <SelectItem value="Medium">Medium</SelectItem>
+                                        <SelectItem value="High">High</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label>Status</Label>
+                                <Select
+                                    value={taskStatus}
+                                    onValueChange={(value: "todo" | "in-progress" | "completed") => setTaskStatus(value)}
+                                    name="task_status"
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select status" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="todo">Todo</SelectItem>
+                                        <SelectItem value="in-progress">In Progress</SelectItem>
+                                        <SelectItem value="completed">Completed</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
                         </div>
 
                         <div className="space-y-2">
-                            <Label>Category</Label>
-                            <Select defaultValue={defaultValues?.category?.id} name="category">
+                            <Label>Assigned To</Label>
+                            <Select
+                                value={assignedUser?.id || ""}
+                                onValueChange={(value) =>
+                                    setAssignedUser(
+                                        sampleUsers.find((user) => user.id === value) || null
+                                    )
+                                }
+                                name="user"
+                            >
                                 <SelectTrigger>
-                                    <SelectValue placeholder="Select category" />
+                                    <SelectValue placeholder="Select user" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {sampleCategories.map((category) => (
-                                        <SelectItem key={category.id} value={category.id}>
+                                    {sampleUsers.map((user) => (
+                                        <SelectItem key={user.id} value={user.id}>
                                             <div className="flex items-center">
-                                                <div
-                                                    className="mr-2 h-2 w-2 rounded-full"
-                                                    style={{ backgroundColor: category.color }}
-                                                />
-                                                {category.name}
+                                                <Avatar className="mr-2 h-6 w-6">
+                                                    <AvatarImage
+                                                        src={user.avatar || ''}
+                                                        alt={user.name}
+                                                    />
+                                                    <AvatarFallback>
+                                                        {user.name
+                                                            .split(" ")
+                                                            .map((n) => n[0])
+                                                            .join("")}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                                {user.name}
                                             </div>
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
                         </div>
-
-                        <div className="space-y-2">
-                            <Label>Assigned To</Label>
-                            <div className="flex flex-wrap gap-2">
-                                {selectedUsers.map((user) => (
-                                    <Badge
-                                        key={user.id}
-                                        variant="secondary"
-                                        className="flex items-center gap-1"
-                                    >
-                                        <Avatar className="h-4 w-4">
-                                            <AvatarImage src={user.avatar} alt={user.name} />
-                                            <AvatarFallback>
-                                                {user.name.split(" ").map((n) => n[0]).join("")}
-                                            </AvatarFallback>
-                                        </Avatar>
-                                        {user.name}
-                                        <Button
-                                            type="button"
-                                            variant="ghost"
-                                            size="icon"
-                                            className="h-4 w-4 p-0 hover:bg-transparent"
-                                            onClick={() =>
-                                                setSelectedUsers(
-                                                    selectedUsers.filter((u) => u.id !== user.id)
-                                                )
-                                            }
-                                        >
-                                            <X className="h-3 w-3" />
-                                            <span className="sr-only">Remove {user.name}</span>
-                                        </Button>
-                                    </Badge>
-                                ))}
-                                <Popover>
-                                    <PopoverTrigger asChild>
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            size="sm"
-                                            className="h-7"
-                                        >
-                                            <Plus className="mr-1 h-4 w-4" />
-                                            Add Member
-                                        </Button>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-56 p-2">
-                                        <div className="space-y-1">
-                                            {sampleUsers
-                                                .filter(
-                                                    (user) =>
-                                                        !selectedUsers.find((u) => u.id === user.id)
-                                                )
-                                                .map((user) => (
-                                                    <Button
-                                                        key={user.id}
-                                                        type="button"
-                                                        variant="ghost"
-                                                        className="w-full justify-start"
-                                                        onClick={() =>
-                                                            setSelectedUsers([...selectedUsers, user])
-                                                        }
-                                                    >
-                                                        <Avatar className="mr-2 h-6 w-6">
-                                                            <AvatarImage
-                                                                src={user.avatar}
-                                                                alt={user.name}
-                                                            />
-                                                            <AvatarFallback>
-                                                                {user.name
-                                                                    .split(" ")
-                                                                    .map((n) => n[0])
-                                                                    .join("")}
-                                                            </AvatarFallback>
-                                                        </Avatar>
-                                                        {user.name}
-                                                    </Button>
-                                                ))}
-                                        </div>
-                                    </PopoverContent>
-                                </Popover>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center space-x-2">
-                            <input
-                                type="checkbox"
-                                id="recurring"
-                                name="recurring"
-                                checked={isRecurring}
-                                onChange={(e) => setIsRecurring(e.target.checked)}
-                                className="h-4 w-4 rounded border-gray-300"
-                            />
-                            <Label htmlFor="recurring">Make this a recurring task</Label>
-                        </div>
-
-                        {isRecurring && (
-                            <div className="space-y-2">
-                                <Label>Recurring Schedule</Label>
-                                <Select
-                                    defaultValue={defaultValues?.recurringSchedule || "weekly"}
-                                    name="recurringSchedule"
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select schedule" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="daily">Daily</SelectItem>
-                                        <SelectItem value="weekly">Weekly</SelectItem>
-                                        <SelectItem value="monthly">Monthly</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        )}
                     </div>
 
                     <DialogFooter>
@@ -308,4 +221,3 @@ export function TaskDialog({
         </Dialog>
     )
 }
-
