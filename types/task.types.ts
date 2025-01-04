@@ -20,7 +20,7 @@ export interface TaskType {
     task_title: string;
     task_description: string;
     due_date: string;
-    task_priority: "low" | "Medium" | "High";
+    task_priority: "Low" | "Medium" | "High";
     task_status: "todo" | "in-progress" | "completed";
     user: string;
     createdAt?: string;

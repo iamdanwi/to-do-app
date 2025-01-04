@@ -38,9 +38,9 @@ export function TaskCard({ task, onStatusChange, onDelete }: TaskCardProps) {
     };
 
     const priorityColors = {
-        low: "bg-slate-100 text-slate-700",
-        medium: "bg-yellow-100 text-yellow-700",
-        high: "bg-red-100 text-red-700",
+        Low: "bg-slate-100 text-slate-700",
+        Medium: "bg-yellow-100 text-yellow-700",
+        High: "bg-red-100 text-red-700",
     };
 
     return (
