@@ -34,9 +34,11 @@ import { cn } from "@/lib/utils"
 interface NewTaskDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onCreate: (task: any) => void  // New prop for the callback
 }
 
-export function NewTaskDialog({ open, onOpenChange }: NewTaskDialogProps) {
+export function NewTaskDialog({ open, onOpenChange, onCreate }: NewTaskDialogProps) {
   const [dueDate, setDueDate] = useState<Date>()
   const [taskPriority, setTaskPriority] = useState("Medium")
   const [task, setTask] = useState({
@@ -70,6 +72,7 @@ export function NewTaskDialog({ open, onOpenChange }: NewTaskDialogProps) {
 
       if (response.status === 201) {
         alert("Task created successfully!")
+        onCreate(response.data)  // Call the onCreate callback with the new task data
         onOpenChange(false)
       }
     } catch (error) {

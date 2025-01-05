@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { LayoutDashboard, ListTodo, Calendar, Settings, Bell, Search, PlusCircle, Menu, LogOut } from "lucide-react";
+import { LayoutDashboard, ListTodo, Calendar, Search, PlusCircle, Menu, LogOut } from "lucide-react";
 import { NewTaskDialog } from "@/components/new-task-dailog";
 import axios from "axios";
 
@@ -45,9 +45,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
         { name: "Tasks", href: "/dashboard/tasks", icon: ListTodo },
         { name: "Calendar", href: "/dashboard/calendar", icon: Calendar },
-        { name: "Notifications", href: "/dashboard/notifications", icon: Bell },
-        { name: "Settings", href: "/dashboard/settings", icon: Settings },
     ];
+    // { name: "Notifications", href: "/dashboard/notifications", icon: Bell },
+    // { name: "Settings", href: "/dashboard/settings", icon: Settings },
 
     const handleLogout = async () => {
         try {

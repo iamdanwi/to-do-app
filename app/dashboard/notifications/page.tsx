@@ -1,7 +1,42 @@
+"use client"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Bell, CheckCircle, Clock, AlertCircle } from 'lucide-react'
 
+type Notification = {
+    _id: string;
+    title: string;
+    description: string;
+    time: string;
+    type: "success" | "warning" | "error" | "info";
+};
+
 export default function NotificationsPage() {
+    const [notifications, setNotifications] = useState<Notification[]>([])
+    const [loading, setLoading] = useState<boolean>(true)
+
+    useEffect(() => {
+        // Fetch notifications from the API route
+        const fetchNotifications = async () => {
+            try {
+                const response = await fetch("/api/notifications")
+                if (!response.ok) throw new Error('Failed to fetch notifications')
+                const data = await response.json()
+                setNotifications(data)
+            } catch (error) {
+                console.error("Error fetching notifications:", error)
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchNotifications()
+    }, [])
+
+    if (loading) {
+        return <div>Loading...</div> // Show a loading state while fetching data
+    }
+
     return (
         <div className="max-w-4xl mx-auto space-y-8">
             <div>
@@ -21,46 +56,25 @@ export default function NotificationsPage() {
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-4">
-                        {[
-                            {
-                                icon: CheckCircle,
-                                title: "Task Completed",
-                                description: "Project documentation has been marked as complete",
-                                time: "2 minutes ago",
-                                type: "success"
-                            },
-                            {
-                                icon: Clock,
-                                title: "Task Due Soon",
-                                description: "Frontend development task is due in 2 hours",
-                                time: "1 hour ago",
-                                type: "warning"
-                            },
-                            {
-                                icon: AlertCircle,
-                                title: "Task Overdue",
-                                description: "Backend API integration is overdue by 1 day",
-                                time: "5 hours ago",
-                                type: "error"
-                            },
-                            {
-                                icon: Bell,
-                                title: "New Task Assigned",
-                                description: "You have been assigned to review the new feature",
-                                time: "1 day ago",
-                                type: "info"
-                            }
-                        ].map((notification, index) => (
+                        {notifications.map((notification, index) => (
                             <div
                                 key={index}
-                                className="flex items-start gap-4 rounded-lg border p-4"
+                                className="flex items-start gap-4 rounded-lg border p-4 hover:bg-muted transition"
                             >
-                                <div className={`mt-1 ${notification.type === "success" ? "text-green-500" :
-                                    notification.type === "warning" ? "text-yellow-500" :
-                                        notification.type === "error" ? "text-red-500" :
-                                            "text-blue-500"
-                                    }`}>
-                                    <notification.icon className="h-5 w-5" />
+                                <div
+                                    className={`mt-1 ${notification.type === "success"
+                                        ? "text-green-500"
+                                        : notification.type === "warning"
+                                            ? "text-yellow-500"
+                                            : notification.type === "error"
+                                                ? "text-red-500"
+                                                : "text-blue-500"
+                                        }`}
+                                >
+                                    {notification.type === "success" && <CheckCircle className="h-5 w-5" />}
+                                    {notification.type === "warning" && <Clock className="h-5 w-5" />}
+                                    {notification.type === "error" && <AlertCircle className="h-5 w-5" />}
+                                    {notification.type === "info" && <Bell className="h-5 w-5" />}
                                 </div>
                                 <div className="flex-1 space-y-1">
                                     <p className="font-medium leading-none">{notification.title}</p>
@@ -75,4 +89,3 @@ export default function NotificationsPage() {
         </div>
     )
 }
-

@@ -12,8 +12,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { TaskDialog } from "@/components/task_dailog";
-
+import { NewTaskDialog } from "@/components/new-task-dailog";
 
 export default function TaskManager() {
     const [tasks, setTasks] = useState<TaskType[]>([]);
@@ -34,38 +33,11 @@ export default function TaskManager() {
         fetchTasks();
     }, []);
 
-    // Handle task creation
-    const handleNewTask = async (formData: FormData) => {
-        const newTask: Partial<TaskType> = {
-            task_title: formData.get("title") as string,
-            task_description: formData.get("description") as string,
-            due_date: formData.get("dueDate") ? new Date(formData.get("dueDate") as string).toISOString() : undefined,
-            task_priority: formData.get("priority") as TaskType["task_priority"],
-            task_status: "todo",
-        };
-
-        try {
-            const response = await fetch("/api/tasks/create-task", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(newTask),
-            });
-
-            if (response.ok) {
-                const savedTask = await response.json();
-                setTasks((prevTasks) => [...prevTasks, savedTask]);
-                setIsNewTaskOpen(false);
-            } else {
-                console.error("Failed to create task");
-            }
-        } catch (error) {
-            console.error("Error creating task:", error);
-        }
+    // Handle task creation and update state
+    const handleCreateTask = (newTask: TaskType) => {
+        setTasks((prevTasks) => [newTask, ...prevTasks]); // Add new task to the front of the list
     };
 
-    // Handle task status update
     const handleStatusChange = async (taskId: string, newStatus: TaskType["task_status"]) => {
         try {
             await fetch(`/api/tasks/update-task/${taskId}`, {
@@ -129,7 +101,7 @@ export default function TaskManager() {
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {filteredTasks.map((task) => (
                     <TaskCard
-                        key={task._id}
+                        key={task._id}  // Ensure task._id is unique
                         task={task}
                         onStatusChange={handleStatusChange}
                         onDelete={handleDeleteTask}
@@ -142,11 +114,11 @@ export default function TaskManager() {
                 )}
             </div>
 
-            <TaskDialog
-                mode="create"
+
+            <NewTaskDialog
                 open={isNewTaskOpen}
                 onOpenChange={setIsNewTaskOpen}
-                onSubmit={handleNewTask}
+                onCreate={handleCreateTask}  // Pass the task creation handler here
             />
         </div>
     );
